@@ -28,7 +28,15 @@
   ${If} $abuTauriTransitionUpdate == "true"
     # Run only after files, registry entries, and shortcuts have been written.
     # ExecShellAsUser keeps the launched app in the current user's session.
-    ${StdUtils.ExecShellAsUser} $0 "$launchLink" "open" "--tauri-transition"
+    # In CI (headless), ExecShellAsUser can hang; detect CI and skip auto-launch.
+    # The smoke test will explicitly launch the app after installer exits.
+    StrCpy $R0 ""
+    ReadEnvStr $R0 "CI"
+    ${If} $R0 == "true"
+      # CI mode: do not auto-launch; smoke test handles it
+    ${Else}
+      ${StdUtils.ExecShellAsUser} $0 "$launchLink" "open" "--tauri-transition"
+    ${EndIf}
   ${EndIf}
 !macroend
 
