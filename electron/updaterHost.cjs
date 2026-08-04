@@ -105,6 +105,21 @@ function getUpdater() {
   }
 
   const { autoUpdater } = require('electron-updater');
+  const fs = require('node:fs');
+  const path = require('node:path');
+
+  // Store update payloads in the user's app-data directory instead of the
+  // system temp folder to avoid consuming C:\/tmp space on Windows.
+  const appDataDir = app.getPath('appData');
+  const cacheDir = path.join(appDataDir, 'abu', 'abu-updater-cache');
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+    autoUpdater.downloadToDir = cacheDir;
+    log(`update cache directory set to: ${cacheDir}`);
+  } catch (err) {
+    console.warn('[updaterHost] failed to create update cache dir:', err);
+  }
+
   autoUpdater.autoDownload = false; // the frontend drives download explicitly
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.logger = {
@@ -119,10 +134,9 @@ function getUpdater() {
     // AppUpdater.js ~545), which in dev reads `<appPath>/dev-app-update.yml`
     // and ENOENTs. Writing a real config file and pointing updateConfigPath
     // at it feeds BOTH paths from one source.
-    const fs = require('node:fs');
-    const os = require('node:os');
-    const path = require('node:path');
-    const configPath = path.join(os.tmpdir(), `abu-updater-dev-config-${process.pid}.yml`);
+    const configDir = path.join(app.getPath('appData'), 'abu', 'abu-updater-cache');
+    fs.mkdirSync(configDir, { recursive: true });
+    const configPath = path.join(configDir, `abu-updater-dev-config-${process.pid}.yml`);
     fs.writeFileSync(
       configPath,
       `provider: generic\nurl: ${feedOverride}\nupdaterCacheDirName: abu-updater-dev-cache\n`,

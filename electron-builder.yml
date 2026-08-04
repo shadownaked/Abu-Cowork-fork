@@ -213,7 +213,8 @@ win:
   artifactName: "${productName}-${version}-windows-${arch}-setup.${ext}"
 
 nsis:
-  oneClick: true
+  oneClick: false
+  allowToChangeInstallationDirectory: true
   perMachine: false
   allowElevation: false
   packElevateHelper: false
