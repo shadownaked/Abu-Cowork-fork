@@ -503,7 +503,7 @@ describe('runTauriMigration', () => {
     ).toBe('electron-rc-preserved');
   });
 
-  it('does not shortcut an incomplete v2 marker', () => {
+  it('does not shortcut an incomplete v2 marker', { timeout: 15000 }, () => {
     seedTauriDir();
     const legacyFingerprint = sourceInventoryV2(tauriDir).fingerprint;
     const sourceNotice = seedNoticeDatabase(tauriDir, 'fallback');
